@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>جدول مباريات اليوم</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 10px;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            padding: 15px;
+            background: #1e293b;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        header h1 {
+            font-size: 22px;
+            color: #38bdf8;
+        }
+
+        .matches-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .match-card {
+            background-color: #1e293b;
+            border-radius: 10px;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 4px solid #38bdf8;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .match-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .team {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 35%;
+        }
+
+        .team.away {
+            justify-content: flex-end;
+        }
+
+        .team-name {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .score-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 25%;
+        }
+
+        .score {
+            font-size: 20px;
+            font-weight: bold;
+            background: #0f172a;
+            padding: 4px 12px;
+            border-radius: 6px;
+            color: #4ade80;
+        }
+
+        .status {
+            font-size: 12px;
+            margin-top: 5px;
+            color: #94a3b8;
+        }
+
+        .live {
+            color: #ef4444;
+            font-weight: bold;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>⚽ مباريات اليوم المباشرة</h1>
+    </header>
+
+    <div class="matches-container" id="matches">
+        <div class="loading">جاري تحميل المباريات...</div>
+    </div>
+
+    <script>
+        async function fetchMatches() {
+            const container = document.getElementById('matches');
+            
+            // رابط الـ API المباشر للمباريات (محدث كلياً وبدون حقوق)
+            const apiUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard';
+
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                const events = data.events;
+                if (!events || events.length === 0) {
+                    container.innerHTML = '<div class="loading">لا توجد مباريات جارية الآن.</div>';
+                    return;
+                }
+
+                container.innerHTML = ''; // مسح الرسالة المؤقتة
+
+                events.forEach(event => {
+                    const competition = event.status.type.detail;
+                    const isLive = event.status.type.state === 'in';
+                    const homeTeam = event.competitions[0].competitors.find(c => c.homeAway === 'home');
+                    const awayTeam = event.competitions[0].competitors.find(c => c.awayAway === 'away' || c.homeAway === 'away');
+
+                    const homeName = homeTeam.team.displayName;
+                    const awayName = awayTeam.team.displayName;
+                    
+                    const homeScore = homeTeam.score ?? '0';
+                    const awayScore = awayTeam.score ?? '0';
+
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+
+                    matchCard.innerHTML = `
+                        <div class="team home">
+                            <span class="team-name">${homeName}</span>
+                        </div>
+                        <div class="score-info">
+                            <div class="score">${homeScore} - ${awayScore}</div>
+                            <div class="status ${isLive ? 'live' : ''}">${competition}</div>
+                        </div>
+                        <div class="team away">
+                            <span class="team-name">${awayName}</span>
+                        </div>
+                    `;
+
+                    container.appendChild(matchCard);
+                });
+
+            } catch (err) {
+                console.error(err);
+                container.innerHTML = '<div class="error">حدث خطأ أثناء جلب المباريات. يرجى إعادة المحاولة.</div>';
+            }
+        }
+
+        // تشغيل الدالة فور تحميل الصفحة
+        fetchMatches();
+
+        // تحديث تلقائي للجدول كل 30 ثانية
+        setInterval(fetchMatches, 30000);
+    </script>
+</body>
+</html>
+
