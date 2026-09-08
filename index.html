@@ -3,74 +3,125 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>جدول مباريات اليوم</title>
+    <title>Match Center | مركز المباريات</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
+        :root {
+            --bg-primary: #0f0a1c;
+            --bg-secondary: #1a122e;
+            --bg-card: #261b42;
+            --accent-purple: #8b5cf6;
+            --accent-glow: #a855f7;
+            --text-main: #f3e8ff;
+            --text-sub: #a78bfa;
+            --live-red: #ef4444;
+        }
+
+        [dir="ltr"] {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background 0.3s, color 0.3s;
         }
 
         body {
-            background-color: #0f172a;
-            color: #f8fafc;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             padding: 20px 10px;
-            min-height: 100vh;
         }
 
         header {
             width: 100%;
-            max-width: 800px;
-            text-align: center;
-            padding: 15px;
-            background: #1e293b;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 850px;
+            background: linear-gradient(135deg, #2e1065, #1e1b4b);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
         }
 
         header h1 {
-            font-size: 22px;
-            color: #38bdf8;
+            font-size: 20px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .lang-btn {
+            background: var(--accent-purple);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+        }
+
+        .lang-btn:hover {
+            background: var(--accent-glow);
         }
 
         .matches-container {
             width: 100%;
-            max-width: 800px;
+            max-width: 850px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
 
         .match-card {
-            background-color: #1e293b;
-            border-radius: 10px;
-            padding: 15px 20px;
+            background: var(--bg-card);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 14px;
+            padding: 16px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-right: 4px solid #38bdf8;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
         }
 
         .match-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            border-color: var(--accent-purple);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.3);
         }
 
         .team {
             display: flex;
             align-items: center;
-            gap: 10px;
-            width: 35%;
+            gap: 12px;
+            width: 38%;
         }
 
         .team.away {
             justify-content: flex-end;
+        }
+
+        .team-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
         }
 
         .team-name {
@@ -82,38 +133,109 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 25%;
+            width: 24%;
         }
 
         .score {
-            font-size: 20px;
-            font-weight: bold;
-            background: #0f172a;
-            padding: 4px 12px;
-            border-radius: 6px;
-            color: #4ade80;
+            font-size: 22px;
+            font-weight: 800;
+            background: var(--bg-secondary);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            padding: 6px 16px;
+            border-radius: 10px;
+            color: #ffffff;
+            letter-spacing: 2px;
         }
 
         .status {
             font-size: 12px;
-            margin-top: 5px;
-            color: #94a3b8;
+            margin-top: 6px;
+            color: var(--text-sub);
+            text-align: center;
         }
 
-        .live {
-            color: #ef4444;
+        .live-tag {
+            color: var(--live-red);
             font-weight: bold;
-            animation: blink 1.5s infinite;
+            animation: pulse 1.5s infinite;
         }
 
-        @keyframes blink {
-            50% { opacity: 0.5; }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.4; }
+            100% { opacity: 1; }
         }
 
-        .loading, .error {
+        /* Modal Details Window */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 10, 28, 0.85);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--accent-purple);
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-size: 22px;
+            cursor: pointer;
+        }
+
+        [dir="ltr"] .close-btn {
+            left: auto;
+            right: 15px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 12px 0;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .stat-bar-bg {
+            background: #2e1b4e;
+            height: 8px;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 5px;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .stat-bar-fill {
+            background: var(--accent-purple);
+            height: 100%;
+        }
+
+        .loading, .error-msg {
             text-align: center;
             padding: 40px;
-            color: #94a3b8;
+            color: var(--text-sub);
             font-size: 16px;
         }
     </style>
@@ -121,57 +243,109 @@
 <body>
 
     <header>
-        <h1>⚽ مباريات اليوم المباشرة</h1>
+        <h1><i class="fa-solid fa-trophy" style="color: var(--accent-purple);"></i> <span id="txt-title">جدول المباريات الحية</span></h1>
+        <button class="lang-btn" onclick="toggleLanguage()">
+            <i class="fa-solid fa-globe"></i> <span id="txt-lang-btn">English</span>
+        </button>
     </header>
 
     <div class="matches-container" id="matches">
-        <div class="loading">جاري تحميل المباريات...</div>
+        <div class="loading" id="txt-loading">جاري جلب أحداث المباريات...</div>
+    </div>
+
+    <!-- Modal for details -->
+    <div class="modal-overlay" id="matchModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+            <div id="modalBody"></div>
+        </div>
     </div>
 
     <script>
+        let currentLang = 'ar';
+        let matchesData = [];
+
+        const i18n = {
+            ar: {
+                title: "جدول المباريات الحية",
+                langBtn: "English",
+                loading: "جاري جلب أحداث المباريات...",
+                noMatches: "لا توجد مباريات حية في الوقت الحالي.",
+                error: "حدث خطأ في تحميل البيانات.",
+                venue: "الملعب",
+                status: "الحالة",
+                statsTitle: "إحصائيات المباراة",
+                possession: "الاستحواذ",
+                shots: "التسديدات",
+                fouls: "الأخطاء"
+            },
+            en: {
+                title: "Live Match Center",
+                langBtn: "عربي",
+                loading: "Fetching match center data...",
+                noMatches: "No live matches available right now.",
+                error: "Failed to load data.",
+                venue: "Venue",
+                status: "Status",
+                statsTitle: "Match Statistics",
+                possession: "Possession",
+                shots: "Total Shots",
+                fouls: "Fouls"
+            }
+        };
+
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.documentElement.lang = currentLang;
+
+            document.getElementById('txt-title').innerText = i18n[currentLang].title;
+            document.getElementById('txt-lang-btn').innerText = i18n[currentLang].langBtn;
+            
+            fetchMatches();
+        }
+
         async function fetchMatches() {
             const container = document.getElementById('matches');
-            
-            // رابط الـ API المباشر للمباريات (محدث كلياً وبدون حقوق)
-            const apiUrl = 'https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard';
+            const langParam = currentLang === 'ar' ? 'ar' : 'en';
+            const apiUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?lang=${langParam}`;
 
             try {
                 const response = await fetch(apiUrl);
                 const data = await response.json();
-                
-                const events = data.events;
-                if (!events || events.length === 0) {
-                    container.innerHTML = '<div class="loading">لا توجد مباريات جارية الآن.</div>';
+                matchesData = data.events || [];
+
+                if (matchesData.length === 0) {
+                    container.innerHTML = `<div class="loading">${i18n[currentLang].noMatches}</div>`;
                     return;
                 }
 
-                container.innerHTML = ''; // مسح الرسالة المؤقتة
+                container.innerHTML = '';
 
-                events.forEach(event => {
-                    const competition = event.status.type.detail;
+                matchesData.forEach((event, idx) => {
+                    const comp = event.competitions[0];
+                    const homeTeam = comp.competitors.find(c => c.homeAway === 'home');
+                    const awayTeam = comp.competitors.find(c => c.homeAway === 'away');
+
                     const isLive = event.status.type.state === 'in';
-                    const homeTeam = event.competitions[0].competitors.find(c => c.homeAway === 'home');
-                    const awayTeam = event.competitions[0].competitors.find(c => c.awayAway === 'away' || c.homeAway === 'away');
-
-                    const homeName = homeTeam.team.displayName;
-                    const awayName = awayTeam.team.displayName;
-                    
-                    const homeScore = homeTeam.score ?? '0';
-                    const awayScore = awayTeam.score ?? '0';
+                    const statusText = isLive ? `<span class="live-tag">● ${event.status.type.detail}</span>` : event.status.type.detail;
 
                     const matchCard = document.createElement('div');
                     matchCard.className = 'match-card';
+                    matchCard.onclick = () => showDetails(idx);
 
                     matchCard.innerHTML = `
                         <div class="team home">
-                            <span class="team-name">${homeName}</span>
+                            <img class="team-logo" src="${homeTeam.team.logo || 'https://via.placeholder.com/40'}" alt="logo">
+                            <span class="team-name">${homeTeam.team.displayName}</span>
                         </div>
                         <div class="score-info">
-                            <div class="score">${homeScore} - ${awayScore}</div>
-                            <div class="status ${isLive ? 'live' : ''}">${competition}</div>
+                            <div class="score">${homeTeam.score ?? 0} - ${awayTeam.score ?? 0}</div>
+                            <div class="status">${statusText}</div>
                         </div>
                         <div class="team away">
-                            <span class="team-name">${awayName}</span>
+                            <span class="team-name">${awayTeam.team.displayName}</span>
+                            <img class="team-logo" src="${awayTeam.team.logo || 'https://via.placeholder.com/40'}" alt="logo">
                         </div>
                     `;
 
@@ -180,16 +354,79 @@
 
             } catch (err) {
                 console.error(err);
-                container.innerHTML = '<div class="error">حدث خطأ أثناء جلب المباريات. يرجى إعادة المحاولة.</div>';
+                container.innerHTML = `<div class="error-msg">${i18n[currentLang].error}</div>`;
             }
         }
 
-        // تشغيل الدالة فور تحميل الصفحة
-        fetchMatches();
+        function showDetails(index) {
+            const event = matchesData[index];
+            const comp = event.competitions[0];
+            const homeTeam = comp.competitors.find(c => c.homeAway === 'home');
+            const awayTeam = comp.competitors.find(c => c.homeAway === 'away');
 
-        // تحديث تلقائي للجدول كل 30 ثانية
+            const venue = comp.venue ? comp.venue.fullName : 'N/A';
+            const stats = comp.statistics || [];
+
+            let statsHTML = '';
+            if (stats.length > 0) {
+                stats.forEach(s => {
+                    statsHTML += `
+                        <div class="stat-row">
+                            <span>${s.displayValue || '0'}</span>
+                            <span style="color:var(--text-sub);">${s.label}</span>
+                            <span>${s.displayValue || '0'}</span>
+                        </div>
+                    `;
+                });
+            } else {
+                statsHTML = `<div style="text-align:center; color:var(--text-sub); padding:15px;">لا توجد إحصائيات تفصيلية لهذه المباراة حالياً.</div>`;
+            }
+
+            const modalBody = document.getElementById('modalBody');
+            modalBody.innerHTML = `
+                <div style="text-align:center; margin-bottom:20px;">
+                    <h3 style="color:var(--accent-purple); margin-bottom:10px;">${event.season.slug || 'Match Details'}</h3>
+                    <p style="font-size:13px; color:var(--text-sub);"><i class="fa-solid fa-location-dot"></i> ${i18n[currentLang].venue}: ${venue}</p>
+                </div>
+                
+                <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:25px;">
+                    <div style="text-align:center;">
+                        <img src="${homeTeam.team.logo}" style="width:55px; height:55px;">
+                        <div style="font-weight:bold; margin-top:8px;">${homeTeam.team.displayName}</div>
+                    </div>
+                    <div style="font-size:28px; font-weight:bold; color:var(--accent-glow);">
+                        ${homeTeam.score ?? 0} : ${awayTeam.score ?? 0}
+                    </div>
+                    <div style="text-align:center;">
+                        <img src="${awayTeam.team.logo}" style="width:55px; height:55px;">
+                        <div style="font-weight:bold; margin-top:8px;">${awayTeam.team.displayName}</div>
+                    </div>
+                </div>
+
+                <h4 style="border-bottom:1px solid rgba(139, 92, 246, 0.3); padding-bottom:8px; margin-bottom:15px; color:var(--text-main);">
+                    ${i18n[currentLang].statsTitle}
+                </h4>
+                ${statsHTML}
+            `;
+
+            document.getElementById('matchModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('matchModal').style.display = 'none';
+        }
+
+        // إغلاق النافذة عند الضغط خارجها
+        window.onclick = function(event) {
+            const modal = document.getElementById('matchModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // تشغيل البداية وتحديث كل 30 ثانية
+        fetchMatches();
         setInterval(fetchMatches, 30000);
     </script>
 </body>
 </html>
-
