@@ -1,578 +1,832 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultimate Football Hub | مركز المباريات الشامل</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <style>
-        :root {
-            --bg-primary: #0a0612;
-            --bg-secondary: #140d24;
-            --bg-card: #1f1438;
-            --accent-purple: #8b5cf6;
-            --accent-glow: #a855f7;
-            --accent-light: #c084fc;
-            --text-main: #f3e8ff;
-            --text-sub: #a78bfa;
-            --live-red: #ef4444;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ultimate Football Hub | مركز المباريات الشامل</title>
+<style>
+:root{
+  --bg-primary:#0a0612;
+  --bg-secondary:#140d24;
+  --bg-card:#1f1438;
+  --bg-card-2:#26173f;
+  --accent-purple:#8b5cf6;
+  --accent-glow:#a855f7;
+  --accent-light:#c084fc;
+  --accent-deep:#5b21b6;
+  --text-main:#f3e8ff;
+  --text-sub:#a78bfa;
+  --text-dim:#7c6a9c;
+  --live-red:#ef4444;
+  --border-soft:rgba(139,92,246,.22);
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg-primary);
+  color:var(--text-main);
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            transition: all 0.2s ease;
-        }
+/* ---------- Ambient animated background ---------- */
+.bg-field{
+  position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+}
+.orb{
+  position:absolute;border-radius:50%;
+  filter:blur(70px);
+  opacity:.35;
+  background:radial-gradient(circle at 30% 30%, var(--accent-glow), transparent 70%);
+  animation:float 22s ease-in-out infinite;
+}
+.orb.o1{width:420px;height:420px;top:-120px;left:-100px;animation-duration:26s;}
+.orb.o2{width:340px;height:340px;bottom:-100px;right:-80px;background:radial-gradient(circle at 60% 40%, var(--accent-deep), transparent 70%);animation-duration:20s;animation-delay:-6s;}
+.orb.o3{width:260px;height:260px;top:40%;left:60%;background:radial-gradient(circle at 50% 50%, var(--accent-purple), transparent 70%);animation-duration:30s;animation-delay:-12s;}
+@keyframes float{
+  0%,100%{transform:translate(0,0) scale(1);}
+  33%{transform:translate(40px,-30px) scale(1.08);}
+  66%{transform:translate(-30px,25px) scale(.95);}
+}
+.grid-lines{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(139,92,246,.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(139,92,246,.05) 1px, transparent 1px);
+  background-size:42px 42px;
+  mask-image:radial-gradient(ellipse at center, black 0%, transparent 75%);
+}
 
-        body {
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 10px;
-        }
+.wrap{
+  position:relative;z-index:1;
+  max-width:920px;margin:0 auto;
+  padding:18px 12px 60px;
+  display:flex;flex-direction:column;gap:16px;
+}
 
-        header {
-            width: 100%;
-            max-width: 900px;
-            background: linear-gradient(135deg, #2e1065, #140d24);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.2);
-        }
+/* ---------- Header ---------- */
+header{
+  background:linear-gradient(135deg, rgba(46,16,101,.85), rgba(20,13,36,.9));
+  border:1px solid var(--border-soft);
+  border-radius:18px;
+  padding:16px 20px;
+  display:flex;justify-content:space-between;align-items:center;
+  backdrop-filter:blur(10px);
+  box-shadow:0 10px 30px rgba(139,92,246,.18);
+  position:relative;overflow:hidden;
+}
+header::before{
+  content:'';position:absolute;top:0;left:-40%;width:40%;height:100%;
+  background:linear-gradient(100deg, transparent, rgba(255,255,255,.08), transparent);
+  animation:sheen 6s ease-in-out infinite;
+}
+@keyframes sheen{
+  0%{left:-40%;}
+  50%{left:120%;}
+  100%{left:120%;}
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand h1{font-size:19px;color:#fff;font-weight:800;letter-spacing:.2px;}
+.brand .sub-clock{font-size:11px;color:var(--text-sub);margin-top:2px;display:flex;align-items:center;gap:6px;}
 
-        header h1 {
-            font-size: 20px;
-            color: #ffffff;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+.trophy-icon{width:34px;height:34px;flex-shrink:0;}
+.trophy-icon .shine{
+  transform-origin:center;
+  animation:trophyGlow 3s ease-in-out infinite;
+}
+@keyframes trophyGlow{
+  0%,100%{opacity:.5;}
+  50%{opacity:1;}
+}
 
-        .lang-btn {
-            background: var(--accent-purple);
-            color: #fff;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
-        }
+.lang-btn{
+  background:var(--accent-purple);
+  color:#fff;border:none;
+  padding:9px 16px;border-radius:10px;
+  cursor:pointer;font-weight:700;font-size:13px;
+  display:flex;align-items:center;gap:8px;
+  box-shadow:0 4px 14px rgba(139,92,246,.45);
+}
+.lang-btn:hover{background:var(--accent-glow);transform:translateY(-1px);}
+.globe-icon{width:16px;height:16px;animation:spin 8s linear infinite;}
+@keyframes spin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
-        .lang-btn:hover {
-            background: var(--accent-glow);
-        }
+/* ---------- Date strip ---------- */
+.date-strip{
+  display:flex;gap:8px;overflow-x:auto;padding:4px 2px 8px;
+  scrollbar-width:none;
+}
+.date-strip::-webkit-scrollbar{display:none;}
+.date-pill{
+  flex:0 0 auto;
+  min-width:64px;
+  background:var(--bg-secondary);
+  border:1px solid var(--border-soft);
+  border-radius:14px;
+  padding:10px 6px;
+  text-align:center;
+  cursor:pointer;
+  position:relative;
+  transition:transform .15s ease, background .2s ease, border-color .2s ease;
+}
+.date-pill .dow{font-size:10px;color:var(--text-sub);font-weight:600;letter-spacing:.3px;}
+.date-pill .dnum{font-size:17px;font-weight:800;color:var(--text-main);margin-top:2px;}
+.date-pill .dtag{font-size:9px;color:var(--text-dim);margin-top:2px;height:11px;}
+.date-pill:hover{transform:translateY(-2px);border-color:var(--accent-glow);}
+.date-pill.active{
+  background:linear-gradient(160deg, var(--accent-purple), var(--accent-deep));
+  border-color:var(--accent-glow);
+  box-shadow:0 6px 18px rgba(139,92,246,.4);
+  transform:translateY(-2px);
+}
+.date-pill.active .dow,.date-pill.active .dnum,.date-pill.active .dtag{color:#fff;}
+.date-pill .live-dot-badge{
+  position:absolute;top:-5px;left:50%;transform:translateX(-50%);
+  width:9px;height:9px;border-radius:50%;
+  background:var(--live-red);
+  box-shadow:0 0 0 0 rgba(239,68,68,.6);
+  animation:pingSmall 1.6s ease-out infinite;
+  display:none;
+}
+.date-pill.has-live .live-dot-badge{display:block;}
+@keyframes pingSmall{
+  0%{box-shadow:0 0 0 0 rgba(239,68,68,.55);}
+  70%{box-shadow:0 0 0 8px rgba(239,68,68,0);}
+  100%{box-shadow:0 0 0 0 rgba(239,68,68,0);}
+}
 
-        /* Date Navigation Bar */
-        .date-bar {
-            width: 100%;
-            max-width: 900px;
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+/* ---------- Leagues / Matches ---------- */
+.matches-container{display:flex;flex-direction:column;gap:16px;}
 
-        .date-btn {
-            background: var(--bg-secondary);
-            border: 1px solid rgba(139, 92, 246, 0.2);
-            color: var(--text-sub);
-            padding: 10px 20px;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            flex: 1;
-            max-width: 150px;
-            text-align: center;
-        }
+.league-block{
+  background:var(--bg-secondary);
+  border:1px solid var(--border-soft);
+  border-radius:16px;
+  overflow:hidden;
+  animation:riseIn .4s ease both;
+}
+@keyframes riseIn{
+  from{opacity:0;transform:translateY(10px);}
+  to{opacity:1;transform:translateY(0);}
+}
 
-        .date-btn:hover, .date-btn.active {
-            background: var(--accent-purple);
-            color: #ffffff;
-            border-color: var(--accent-glow);
-            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
-        }
+.league-header{
+  background:rgba(139,92,246,.13);
+  padding:12px 16px;
+  display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid var(--border-soft);
+  cursor:pointer;
+  user-select:none;
+}
+.league-crest-wrap{
+  width:30px;height:30px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;flex-shrink:0;
+  background:var(--bg-card);
+}
+.league-crest-wrap.live-ring::before{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:2px solid var(--live-red);
+  animation:ringPulse 1.5s ease-out infinite;
+}
+@keyframes ringPulse{
+  0%{transform:scale(.85);opacity:1;}
+  100%{transform:scale(1.4);opacity:0;}
+}
+.league-logo{width:20px;height:20px;object-fit:contain;border-radius:50%;}
+.league-name{font-weight:700;color:var(--accent-light);font-size:14px;flex:1;}
+.league-count{
+  font-size:11px;color:var(--text-sub);
+  background:rgba(139,92,246,.15);
+  padding:3px 9px;border-radius:20px;
+  border:1px solid var(--border-soft);
+}
+.chevron{
+  width:14px;height:14px;color:var(--text-sub);
+  transition:transform .25s ease;
+}
+.league-block.collapsed .chevron{transform:rotate(-90deg);}
+.league-body{
+  display:flex;flex-direction:column;
+  max-height:2000px;overflow:hidden;
+  transition:max-height .35s ease;
+}
+.league-block.collapsed .league-body{max-height:0;}
 
-        .matches-container {
-            width: 100%;
-            max-width: 900px;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+.match-card{
+  background:var(--bg-card);
+  padding:13px 18px;
+  display:flex;justify-content:space-between;align-items:center;
+  cursor:pointer;
+  border-bottom:1px solid rgba(255,255,255,.035);
+  position:relative;
+  transition:background .15s ease;
+}
+.match-card::before{
+  content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:3px;
+  background:transparent;transition:background .2s ease;
+}
+.match-card.is-live::before{background:var(--live-red);}
+.match-card:last-child{border-bottom:none;}
+.match-card:hover{background:var(--bg-card-2);}
 
-        /* League Header Block */
-        .league-block {
-            background: var(--bg-secondary);
-            border: 1px solid rgba(139, 92, 246, 0.25);
-            border-radius: 14px;
-            overflow: hidden;
-        }
+.team{display:flex;align-items:center;gap:10px;width:37%;min-width:0;}
+.team.away{justify-content:flex-end;}
+.team-logo{width:32px;height:32px;object-fit:contain;flex-shrink:0;}
+.team-name{font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.match-card.is-live .team-name.winning{color:var(--accent-light);}
 
-        .league-header {
-            background: rgba(139, 92, 246, 0.15);
-            padding: 12px 18px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            border-bottom: 1px solid rgba(139, 92, 246, 0.2);
-            font-weight: bold;
-            color: var(--accent-light);
-        }
+.score-info{display:flex;flex-direction:column;align-items:center;width:26%;gap:5px;}
+.score{
+  font-size:19px;font-weight:800;
+  background:var(--bg-primary);
+  border:1px solid var(--border-soft);
+  padding:4px 13px;border-radius:9px;
+  color:#fff;letter-spacing:1px;
+  min-width:70px;text-align:center;
+}
+.match-card.is-live .score{border-color:rgba(239,68,68,.5);}
+.status-row{display:flex;align-items:center;gap:5px;font-size:10.5px;color:var(--text-sub);}
+.live-badge{
+  display:flex;align-items:center;gap:4px;
+  color:var(--live-red);font-weight:800;font-size:10.5px;
+}
+.radar-dot{position:relative;width:8px;height:8px;}
+.radar-dot span{
+  position:absolute;inset:0;border-radius:50%;background:var(--live-red);
+}
+.radar-dot::after{
+  content:'';position:absolute;inset:-4px;border-radius:50%;
+  border:1.5px solid var(--live-red);
+  animation:ringPulse 1.2s ease-out infinite;
+}
+.clock-mini{width:11px;height:11px;color:var(--text-sub);flex-shrink:0;}
+.clock-mini .hand{transform-origin:6px 6px;animation:tick 4s steps(4) infinite;}
+@keyframes tick{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}
 
-        .league-logo {
-            width: 26px;
-            height: 26px;
-            object-fit: contain;
-        }
+/* ---------- Modal ---------- */
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(10,6,18,.9);
+  backdrop-filter:blur(10px);
+  display:none;justify-content:center;align-items:center;
+  z-index:1000;padding:14px;
+}
+.modal-content{
+  background:var(--bg-secondary);
+  border:1px solid var(--accent-purple);
+  border-radius:22px;width:100%;max-width:640px;
+  padding:26px;max-height:90vh;overflow-y:auto;
+  position:relative;
+  box-shadow:0 15px 45px rgba(139,92,246,.4);
+  animation:modalIn .25s ease;
+}
+@keyframes modalIn{
+  from{opacity:0;transform:scale(.94) translateY(8px);}
+  to{opacity:1;transform:scale(1) translateY(0);}
+}
+.close-btn{
+  position:absolute;top:14px;left:14px;
+  background:rgba(139,92,246,.15);border:1px solid var(--border-soft);
+  color:var(--text-sub);width:30px;height:30px;border-radius:50%;
+  font-size:18px;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center;
+}
+[dir="ltr"] .close-btn{left:auto;right:14px;}
+.close-btn:hover{color:#fff;border-color:var(--accent-glow);}
 
-        /* Match Card */
-        .match-card {
-            background: var(--bg-card);
-            padding: 14px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-        }
+.modal-league{font-size:12px;color:var(--text-sub);text-align:center;margin-bottom:2px;}
+.modal-teams{
+  display:flex;justify-content:space-around;align-items:center;
+  margin:18px 0 20px;
+}
+.modal-team{text-align:center;width:34%;}
+.modal-team img{width:52px;height:52px;object-fit:contain;}
+.modal-team .mt-name{font-weight:700;margin-top:6px;font-size:13.5px;}
+.modal-score{
+  font-size:28px;font-weight:800;color:var(--accent-glow);
+  letter-spacing:1px;
+}
+.meta-row{
+  display:flex;align-items:center;gap:6px;
+  font-size:11.5px;color:var(--text-sub);
+  justify-content:center;margin-top:4px;
+}
+.meta-icon{width:12px;height:12px;flex-shrink:0;}
+.pin-icon path{animation:bounceY 2s ease-in-out infinite;}
+@keyframes bounceY{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
 
-        .match-card:last-child {
-            border-bottom: none;
-        }
+.detail-title{
+  border-bottom:1px solid var(--border-soft);
+  padding-bottom:6px;margin:18px 0 12px;
+  color:var(--accent-light);font-size:13.5px;font-weight:700;
+  display:flex;align-items:center;gap:6px;
+}
+.star-icon{width:13px;height:13px;animation:twinkle 1.8s ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.85);}}
 
-        .match-card:hover {
-            background: #2a1b4d;
-        }
+.stat-compare{margin-bottom:12px;}
+.stat-labels{
+  display:flex;justify-content:space-between;
+  font-size:12px;color:var(--text-main);margin-bottom:5px;
+}
+.stat-bar-track{
+  display:flex;align-items:center;gap:6px;height:7px;
+}
+.stat-bar-track .lbl-center{
+  font-size:9.5px;color:var(--text-dim);width:100px;text-align:center;flex-shrink:0;
+}
+.bar-bg{flex:1;height:7px;background:rgba(255,255,255,.06);border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;width:0%;transition:width 1s cubic-bezier(.22,1,.36,1);}
+.bar-fill.home{background:linear-gradient(90deg,var(--accent-deep),var(--accent-purple));margin-inline-start:auto;}
+.bar-fill.away{background:linear-gradient(90deg,var(--accent-glow),var(--accent-light));}
 
-        .team {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            width: 38%;
-        }
+.leader-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);
+  font-size:12.5px;
+}
+.leader-row:last-child{border-bottom:none;}
+.leader-label{color:var(--text-sub);display:flex;align-items:center;gap:6px;}
+.leader-name{font-weight:700;color:var(--text-main);}
 
-        .team.away {
-            justify-content: flex-end;
-        }
+.empty-icon{width:44px;height:44px;margin:0 auto 10px;opacity:.6;}
+.ball-icon path{animation:rollSpin 3s linear infinite;transform-origin:center;}
+@keyframes rollSpin{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
-        .team-logo {
-            width: 35px;
-            height: 35px;
-            object-fit: contain;
-        }
+.loading,.error-msg,.empty-msg{text-align:center;padding:50px 20px;color:var(--text-sub);font-size:14px;}
+.loading .spinner{
+  width:36px;height:36px;margin:0 auto 14px;
+  border:3px solid rgba(139,92,246,.2);
+  border-top-color:var(--accent-glow);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
 
-        .team-name {
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .score-info {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 24%;
-        }
-
-        .score {
-            font-size: 20px;
-            font-weight: 800;
-            background: var(--bg-primary);
-            border: 1px solid rgba(139, 92, 246, 0.3);
-            padding: 4px 14px;
-            border-radius: 8px;
-            color: #ffffff;
-            letter-spacing: 1px;
-        }
-
-        .status {
-            font-size: 11px;
-            margin-top: 5px;
-            color: var(--text-sub);
-            text-align: center;
-        }
-
-        .live-tag {
-            color: var(--live-red);
-            font-weight: bold;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.4; }
-            100% { opacity: 1; }
-        }
-
-        /* Modal Details Window */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(10, 6, 18, 0.88);
-            backdrop-filter: blur(8px);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            padding: 15px;
-        }
-
-        .modal-content {
-            background: var(--bg-secondary);
-            border: 1px solid var(--accent-purple);
-            border-radius: 20px;
-            width: 100%;
-            max-width: 650px;
-            padding: 25px;
-            box-shadow: 0 10px 35px rgba(139, 92, 246, 0.35);
-            position: relative;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            background: none;
-            border: none;
-            color: var(--text-sub);
-            font-size: 22px;
-            cursor: pointer;
-        }
-
-        [dir="ltr"] .close-btn {
-            left: auto;
-            right: 15px;
-        }
-
-        .stat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 8px 0;
-            padding: 6px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            font-size: 13px;
-        }
-
-        .detail-tab {
-            margin-top: 15px;
-        }
-
-        .detail-title {
-            border-bottom: 1px solid rgba(139, 92, 246, 0.3);
-            padding-bottom: 6px;
-            margin: 15px 0 10px 0;
-            color: var(--accent-light);
-            font-size: 14px;
-        }
-
-        .loading, .error-msg {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-sub);
-            font-size: 15px;
-        }
-    </style>
+@media (max-width:480px){
+  .brand h1{font-size:16px;}
+  .team-name{font-size:12px;}
+  .score{font-size:16px;min-width:58px;}
+}
+</style>
 </head>
 <body>
 
-    <header>
-        <h1><i class="fa-solid fa-trophy" style="color: var(--accent-purple);"></i> <span id="txt-title">مركز المباريات الشامل</span></h1>
-        <button class="lang-btn" onclick="toggleLanguage()">
-            <i class="fa-solid fa-globe"></i> <span id="txt-lang-btn">English</span>
-        </button>
-    </header>
+<div class="bg-field">
+  <div class="orb o1"></div>
+  <div class="orb o2"></div>
+  <div class="orb o3"></div>
+  <div class="grid-lines"></div>
+</div>
 
-    <!-- Date Navigation Bar -->
-    <div class="date-bar">
-        <button class="date-btn" id="btn-prev" onclick="changeDate(-1)">أمس</button>
-        <button class="date-btn active" id="btn-today" onclick="changeDate(0)">اليوم</button>
-        <button class="date-btn" id="btn-next" onclick="changeDate(1)">غداً</button>
-    </div>
+<div class="wrap">
 
-    <div class="matches-container" id="matches">
-        <div class="loading" id="txt-loading">جاري تحضير جداول البطولات والمباريات...</div>
-    </div>
-
-    <!-- Modal for details -->
-    <div class="modal-overlay" id="matchModal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">&times;</button>
-            <div id="modalBody"></div>
+  <header>
+    <div class="brand">
+      <svg class="trophy-icon" viewBox="0 0 48 48" fill="none">
+        <defs>
+          <linearGradient id="trophyGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#c084fc"/>
+            <stop offset="100%" stop-color="#8b5cf6"/>
+          </linearGradient>
+        </defs>
+        <path d="M14 6h20v10a10 10 0 0 1-20 0V6z" fill="url(#trophyGrad)"/>
+        <path d="M14 8H7a3 3 0 0 0 0 10c0-3 3-5 7-6" stroke="url(#trophyGrad)" stroke-width="2" fill="none"/>
+        <path d="M34 8h7a3 3 0 0 1 0 10c0-3-3-5-7-6" stroke="url(#trophyGrad)" stroke-width="2" fill="none"/>
+        <rect x="20" y="24" width="8" height="8" fill="url(#trophyGrad)"/>
+        <rect x="15" y="34" width="18" height="5" rx="2" fill="url(#trophyGrad)"/>
+        <rect class="shine" x="12" y="0" width="6" height="26" fill="#fff" opacity=".5" transform="skewX(-20)"/>
+      </svg>
+      <div>
+        <h1 id="txt-title">مركز المباريات الشامل</h1>
+        <div class="sub-clock">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2"/>
+            <path class="hand" d="M12 7v5l3 2" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="transform-origin:12px 12px;animation:spin 60s linear infinite;"/>
+          </svg>
+          <span id="live-clock">--:--:--</span>
         </div>
+      </div>
+    </div>
+    <button class="lang-btn" onclick="toggleLanguage()">
+      <svg class="globe-icon" viewBox="0 0 24 24" fill="none">
+        <circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.6"/>
+        <path d="M3 12h18M12 3a15 15 0 0 1 0 18 15 15 0 0 1 0-18z" stroke="#fff" stroke-width="1.6"/>
+      </svg>
+      <span id="txt-lang-btn">English</span>
+    </button>
+  </header>
+
+  <div class="date-strip" id="dateStrip"></div>
+
+  <div class="matches-container" id="matches">
+    <div class="loading" id="initLoading">
+      <div class="spinner"></div>
+      <span id="txt-loading">جاري تحضير جداول البطولات والمباريات...</span>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="matchModal">
+  <div class="modal-content">
+    <button class="close-btn" onclick="closeModal()">&times;</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+let currentLang = 'ar';
+let currentDateOffset = 0;
+let groupedMatches = {};
+let collapsedLeagues = {};
+const DAY_RANGE = 4; // days before/after today shown in strip
+
+const i18n = {
+  ar:{
+    title:"مركز المباريات الشامل", langBtn:"English",
+    loading:"جاري تحميل وتحديث المباريات...",
+    noMatches:"لا توجد مباريات مسجلة في هذا اليوم.",
+    error:"حدث خطأ في جلب البيانات. تحقق من الاتصال وحاول مجدداً.",
+    today:"اليوم", venue:"الملعب", capacity:"السعة", officials:"الحكم",
+    statsTitle:"إحصائيات المباراة", leadersTitle:"أبرز الأحداث",
+    noStats:"لا توجد إحصائيات تفصيلية مسجلة لهذه المباراة.",
+    noLeaders:"لا توجد أحداث أو تفاصيل بارزة مسجلة.",
+    ft:"انتهت", live:"مباشر", matchesWord:"مباراة",
+    dows:['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'],
+    locale:'ar-EG'
+  },
+  en:{
+    title:"Ultimate Match Center", langBtn:"عربي",
+    loading:"Loading match center data...",
+    noMatches:"No matches scheduled for this date.",
+    error:"Failed to load data. Check your connection and try again.",
+    today:"Today", venue:"Venue", capacity:"Capacity", officials:"Referee",
+    statsTitle:"Match Statistics", leadersTitle:"Key Events & Leaders",
+    noStats:"No detailed statistics recorded for this match.",
+    noLeaders:"No notable events or leader details recorded.",
+    ft:"Full Time", live:"Live", matchesWord:"matches",
+    dows:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    locale:'en-US'
+  }
+};
+
+function t(k){ return i18n[currentLang][k]; }
+
+function getDateObj(offset){
+  const d = new Date();
+  d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + offset);
+  return d;
+}
+function fmtApiDate(d){
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}${m}${day}`;
+}
+
+/* ---------------- Date strip ---------------- */
+function buildDateStrip(){
+  const strip = document.getElementById('dateStrip');
+  strip.innerHTML = '';
+  for(let off=-DAY_RANGE; off<=DAY_RANGE; off++){
+    const d = getDateObj(off);
+    const pill = document.createElement('div');
+    pill.className = 'date-pill' + (off===currentDateOffset ? ' active':'');
+    pill.id = 'pill-'+off;
+    pill.onclick = () => changeDate(off);
+    const dow = t('dows')[d.getDay()];
+    const tag = off===0 ? t('today') : '';
+    pill.innerHTML = `
+      <div class="live-dot-badge"></div>
+      <div class="dow">${dow}</div>
+      <div class="dnum">${d.getDate()}</div>
+      <div class="dtag">${tag}</div>
+    `;
+    strip.appendChild(pill);
+  }
+  const active = document.getElementById('pill-'+currentDateOffset);
+  if(active) active.scrollIntoView({inline:'center', block:'nearest'});
+}
+
+function changeDate(offset){
+  currentDateOffset = offset;
+  document.querySelectorAll('.date-pill').forEach(p=>p.classList.remove('active'));
+  const el = document.getElementById('pill-'+offset);
+  if(el) el.classList.add('active');
+  fetchMatches();
+}
+
+/* ---------------- Language ---------------- */
+function toggleLanguage(){
+  currentLang = currentLang === 'ar' ? 'en' : 'ar';
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+  document.documentElement.lang = currentLang;
+  document.getElementById('txt-title').innerText = t('title');
+  document.getElementById('txt-lang-btn').innerText = t('langBtn');
+  buildDateStrip();
+  fetchMatches();
+}
+
+/* ---------------- Live clock (user's local timezone) ---------------- */
+function tzName(){
+  try{ return Intl.DateTimeFormat().resolvedOptions().timeZone; }catch(e){ return ''; }
+}
+function updateLiveClock(){
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString(i18n[currentLang].locale, {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  document.getElementById('live-clock').innerText = `${timeStr} · ${tzName()}`;
+}
+setInterval(updateLiveClock, 1000);
+updateLiveClock();
+
+function localKickoff(isoDate){
+  const d = new Date(isoDate);
+  return d.toLocaleTimeString(i18n[currentLang].locale, {hour:'2-digit', minute:'2-digit'});
+}
+
+/* ---------------- Icons ---------------- */
+const ICON_CLOCK = `<svg class="clock-mini" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path class="hand" d="M12 7v5l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`;
+const ICON_RADAR = `<span class="radar-dot"><span></span></span>`;
+const ICON_PIN = `<svg class="meta-icon pin-icon" viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.5 7-12a7 7 0 1 0-14 0c0 5.5 7 12 7 12z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9" r="2.4" fill="currentColor"/></svg>`;
+const ICON_WHISTLE = `<svg class="meta-icon" viewBox="0 0 24 24" fill="none"><circle cx="8" cy="16" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M11 13 20 4M20 4h-4M20 4v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_STAR = `<svg class="star-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6L22 9.3l-5 4.9 1.2 7.1L12 17.9 5.8 21.3 7 14.2 2 9.3l7.1-.7z"/></svg>`;
+const ICON_BALL = `<svg class="empty-icon ball-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8l3 2.2-1.1 3.6H10.1L9 10.2 12 8zM12 2v6M12 22v-2.5M2 12h6M22 12h-4.5" stroke="currentColor" stroke-width="1.3"/></svg>`;
+const ICON_CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+/* ---------------- League name resolution ---------------- */
+function resolveLeagueInfo(event){
+  const comp = event.competitions[0];
+  const league = comp.league || (event.season ? {name:event.season.slug} : null);
+  let name = league && league.name ? league.name : (event.season && event.season.slug ? event.season.slug : 'International');
+  name = name.replace(/[-_]/g,' ').replace(/\s+/g,' ').trim();
+  name = name.replace(/\b\w/g, c => c.toUpperCase());
+  const logo = league && league.logos && league.logos.length ? league.logos[0].href : '';
+  const key = (league && league.slug) || name;
+  return {key, name, logo};
+}
+
+/* ---------------- Fetch & render ---------------- */
+async function fetchMatches(){
+  const container = document.getElementById('matches');
+  container.innerHTML = `<div class="loading"><div class="spinner"></div><span>${t('loading')}</span></div>`;
+
+  const dateStr = fmtApiDate(getDateObj(currentDateOffset));
+  const langParam = currentLang === 'ar' ? 'ar' : 'en';
+  const apiUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${dateStr}&lang=${langParam}`;
+
+  try{
+    const response = await fetch(apiUrl);
+    const data = await response.json();
+    const events = data.events || [];
+
+    if(events.length === 0){
+      container.innerHTML = `<div class="empty-msg">${ICON_BALL}<div>${t('noMatches')}</div></div>`;
+      markLiveDays();
+      return;
+    }
+
+    groupedMatches = {};
+    events.forEach(event=>{
+      const info = resolveLeagueInfo(event);
+      if(!groupedMatches[info.key]){
+        groupedMatches[info.key] = {name: info.name, logo: info.logo, matches: []};
+      }
+      groupedMatches[info.key].matches.push(event);
+    });
+
+    // sort matches inside each league: live first, then scheduled by time, then finished by time
+    Object.values(groupedMatches).forEach(lg=>{
+      lg.matches.sort((a,b)=>{
+        const rank = ev => ev.status.type.state === 'in' ? 0 : ev.status.type.state === 'pre' ? 1 : 2;
+        const ra = rank(a), rb = rank(b);
+        if(ra !== rb) return ra - rb;
+        return new Date(a.date) - new Date(b.date);
+      });
+    });
+
+    // sort leagues: any-live first, then alphabetically
+    const leagueKeys = Object.keys(groupedMatches).sort((a,b)=>{
+      const aLive = groupedMatches[a].matches.some(e=>e.status.type.state==='in');
+      const bLive = groupedMatches[b].matches.some(e=>e.status.type.state==='in');
+      if(aLive !== bLive) return aLive ? -1 : 1;
+      return groupedMatches[a].name.localeCompare(groupedMatches[b].name);
+    });
+
+    container.innerHTML = '';
+    leagueKeys.forEach(leagueKey=>{
+      const league = groupedMatches[leagueKey];
+      const hasLive = league.matches.some(e=>e.status.type.state==='in');
+      const isCollapsed = !!collapsedLeagues[leagueKey];
+
+      const block = document.createElement('div');
+      block.className = 'league-block' + (isCollapsed ? ' collapsed':'');
+      block.id = 'lg-'+btoa(unescape(encodeURIComponent(leagueKey))).replace(/[^a-zA-Z0-9]/g,'');
+
+      let matchesHTML = '';
+      league.matches.forEach((event, idx)=>{
+        const comp = event.competitions[0];
+        const homeTeam = comp.competitors.find(c=>c.homeAway==='home');
+        const awayTeam = comp.competitors.find(c=>c.homeAway==='away');
+        const state = event.status.type.state;
+        const isLive = state === 'in';
+        const isFinal = state === 'post';
+
+        let statusHTML;
+        if(isLive){
+          statusHTML = `<div class="live-badge">${ICON_RADAR}<span>${event.status.type.detail || t('live')}</span></div>`;
+        } else if(isFinal){
+          statusHTML = `<div class="status-row">${t('ft')}</div>`;
+        } else {
+          statusHTML = `<div class="status-row">${ICON_CLOCK}<span>${localKickoff(event.date)}</span></div>`;
+        }
+
+        const hs = homeTeam.score ?? 0, as = awayTeam.score ?? 0;
+        const homeWin = isFinal && Number(hs) > Number(as);
+        const awayWin = isFinal && Number(as) > Number(hs);
+
+        matchesHTML += `
+          <div class="match-card ${isLive?'is-live':''}" onclick="showDetails('${leagueKey.replace(/'/g,"\\'")}', ${idx})">
+            <div class="team home">
+              <img class="team-logo" src="${homeTeam.team.logo || ''}" alt="" onerror="this.style.visibility='hidden'">
+              <span class="team-name ${homeWin?'winning':''}">${homeTeam.team.displayName}</span>
+            </div>
+            <div class="score-info">
+              <div class="score">${state==='pre' ? localKickoff(event.date) : hs+' - '+as}</div>
+              ${statusHTML}
+            </div>
+            <div class="team away">
+              <span class="team-name ${awayWin?'winning':''}">${awayTeam.team.displayName}</span>
+              <img class="team-logo" src="${awayTeam.team.logo || ''}" alt="" onerror="this.style.visibility='hidden'">
+            </div>
+          </div>
+        `;
+      });
+
+      block.innerHTML = `
+        <div class="league-header" onclick="toggleLeague('${leagueKey.replace(/'/g,"\\'")}', this)">
+          <div class="league-crest-wrap ${hasLive?'live-ring':''}">
+            ${league.logo ? `<img class="league-logo" src="${league.logo}" onerror="this.style.display='none'">` : ''}
+          </div>
+          <span class="league-name">${league.name}</span>
+          <span class="league-count">${league.matches.length} ${t('matchesWord')}</span>
+          ${ICON_CHEVRON}
+        </div>
+        <div class="league-body">${matchesHTML}</div>
+      `;
+      container.appendChild(block);
+    });
+
+    markLiveDays();
+
+  }catch(err){
+    console.error(err);
+    container.innerHTML = `<div class="error-msg">${t('error')}</div>`;
+  }
+}
+
+function toggleLeague(key, headerEl){
+  collapsedLeagues[key] = !collapsedLeagues[key];
+  const block = headerEl.closest('.league-block');
+  block.classList.toggle('collapsed', collapsedLeagues[key]);
+}
+
+// lightweight check: mark which date pills currently have a live match (only for the loaded day, best-effort)
+function markLiveDays(){
+  const anyLive = Object.values(groupedMatches).some(lg=>lg.matches.some(e=>e.status.type.state==='in'));
+  const pill = document.getElementById('pill-'+currentDateOffset);
+  if(pill) pill.classList.toggle('has-live', anyLive);
+}
+
+/* ---------------- Modal / details ---------------- */
+function buildStatBars(homeTeam, awayTeam){
+  const homeStats = homeTeam.statistics || [];
+  const awayStats = awayTeam.statistics || [];
+  if(homeStats.length === 0 && awayStats.length === 0) return null;
+
+  const map = {};
+  homeStats.forEach(s=>{
+    map[s.name] = map[s.name] || {};
+    map[s.name].label = s.displayName || s.label || s.name;
+    map[s.name].home = parseFloat(s.displayValue) || 0;
+    map[s.name].homeDisplay = s.displayValue ?? '0';
+  });
+  awayStats.forEach(s=>{
+    map[s.name] = map[s.name] || {};
+    map[s.name].label = s.displayName || s.label || s.name;
+    map[s.name].away = parseFloat(s.displayValue) || 0;
+    map[s.name].awayDisplay = s.displayValue ?? '0';
+  });
+
+  let html = '';
+  Object.values(map).forEach(row=>{
+    const h = row.home || 0, a = row.away || 0;
+    const total = h + a;
+    const homePct = total > 0 ? (h/total*100) : 50;
+    const awayPct = total > 0 ? (a/total*100) : 50;
+    html += `
+      <div class="stat-compare">
+        <div class="stat-labels">
+          <span>${row.homeDisplay ?? '0'}</span>
+          <span style="color:var(--text-sub);font-weight:600;">${row.label}</span>
+          <span>${row.awayDisplay ?? '0'}</span>
+        </div>
+        <div class="stat-bar-track">
+          <div class="bar-bg"><div class="bar-fill home" data-pct="${homePct}" style="width:0%"></div></div>
+          <div class="bar-bg"><div class="bar-fill away" data-pct="${awayPct}" style="width:0%"></div></div>
+        </div>
+      </div>
+    `;
+  });
+  return html;
+}
+
+function showDetails(leagueKey, index){
+  const event = groupedMatches[leagueKey].matches[index];
+  const comp = event.competitions[0];
+  const homeTeam = comp.competitors.find(c=>c.homeAway==='home');
+  const awayTeam = comp.competitors.find(c=>c.homeAway==='away');
+
+  const venue = comp.venue ? comp.venue.fullName : 'N/A';
+  const capacity = comp.venue && comp.venue.capacity ? comp.venue.capacity.toLocaleString() : null;
+  const official = comp.officials && comp.officials.length > 0 ? comp.officials[0].displayName : null;
+
+  const leaders = comp.leaders || event.competitions[0].leaders || [];
+  let leadersHTML = '';
+  if(leaders.length > 0){
+    leaders.forEach(l=>{
+      const athlete = l.leaders && l.leaders[0] ? l.leaders[0].athlete.displayName : null;
+      const value = l.leaders && l.leaders[0] ? l.leaders[0].displayValue : '';
+      if(!athlete) return;
+      leadersHTML += `
+        <div class="leader-row">
+          <span class="leader-label">${ICON_STAR}${l.displayName}</span>
+          <span class="leader-name">${athlete} ${value?('· '+value):''}</span>
+        </div>
+      `;
+    });
+  }
+  if(!leadersHTML) leadersHTML = `<div class="empty-msg" style="padding:16px;">${t('noLeaders')}</div>`;
+
+  const statsHTML = buildStatBars(homeTeam, awayTeam);
+  const statsBlock = statsHTML ? statsHTML : `<div class="empty-msg" style="padding:16px;">${t('noStats')}</div>`;
+
+  const hs = homeTeam.score ?? 0, as = awayTeam.score ?? 0;
+  const isPre = event.status.type.state === 'pre';
+  const scoreDisplay = isPre ? localKickoff(event.date) : `${hs} : ${as}`;
+
+  const modalBody = document.getElementById('modalBody');
+  modalBody.innerHTML = `
+    <div class="modal-league">${groupedMatches[leagueKey].name}</div>
+    <div class="meta-row">${ICON_PIN}<span>${t('venue')}: ${venue}${capacity?` (${t('capacity')}: ${capacity})`:''}</span></div>
+    ${official?`<div class="meta-row">${ICON_WHISTLE}<span>${t('officials')}: ${official}</span></div>`:''}
+
+    <div class="modal-teams">
+      <div class="modal-team">
+        <img src="${homeTeam.team.logo||''}" onerror="this.style.visibility='hidden'">
+        <div class="mt-name">${homeTeam.team.displayName}</div>
+      </div>
+      <div class="modal-score">${scoreDisplay}</div>
+      <div class="modal-team">
+        <img src="${awayTeam.team.logo||''}" onerror="this.style.visibility='hidden'">
+        <div class="mt-name">${awayTeam.team.displayName}</div>
+      </div>
     </div>
 
-    <script>
-        let currentLang = 'ar';
-        let currentDateOffset = 0;
-        let groupedMatches = {};
+    <div class="detail-tab">
+      <h4 class="detail-title">${ICON_STAR}${t('statsTitle')}</h4>
+      ${statsBlock}
+    </div>
 
-        const i18n = {
-            ar: {
-                title: "مركز المباريات الشامل",
-                langBtn: "English",
-                loading: "جاري تحميل وتحديث المباريات...",
-                noMatches: "لا توجد مباريات مسجلة في هذا اليوم.",
-                error: "حدث خطأ في جلب البيانات.",
-                yesterday: "أمس",
-                today: "اليوم",
-                tomorrow: "غداً",
-                venue: "الملعب",
-                capacity: "السعة",
-                officials: "الحكم",
-                statsTitle: "إحصائيات المباراة",
-                leadersTitle: "أبرز أحداث وتفاصيل المباراة",
-                lineupsTitle: "التشكيلات والمدربين"
-            },
-            en: {
-                title: "Ultimate Match Center",
-                langBtn: "عربي",
-                loading: "Loading match center data...",
-                noMatches: "No matches scheduled for this date.",
-                error: "Failed to load data.",
-                yesterday: "Yesterday",
-                today: "Today",
-                tomorrow: "Tomorrow",
-                venue: "Venue",
-                capacity: "Capacity",
-                officials: "Referee",
-                statsTitle: "Match Statistics",
-                leadersTitle: "Key Events & Leaders",
-                lineupsTitle: "Lineups & Managers"
-            }
-        };
+    <div class="detail-tab">
+      <h4 class="detail-title">${ICON_STAR}${t('leadersTitle')}</h4>
+      ${leadersHTML}
+    </div>
+  `;
 
-        function getDateFormatted(offset) {
-            const d = new Date();
-            d.setDate(d.getDate() + offset);
-            const year = d.getFullYear();
-            const month = String(d.getMonth() + 1).padStart(2, '0');
-            const day = String(d.getDate()).padStart(2, '0');
-            return `${year}${month}${day}`;
-        }
+  document.getElementById('matchModal').style.display = 'flex';
+  // animate bars after paint
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      document.querySelectorAll('.bar-fill').forEach(el=>{
+        el.style.width = el.dataset.pct + '%';
+      });
+    });
+  });
+}
 
-        function changeDate(offset) {
-            currentDateOffset = offset;
-            document.querySelectorAll('.date-btn').forEach(btn => btn.classList.remove('active'));
-            if (offset === -1) document.getElementById('btn-prev').classList.add('active');
-            if (offset === 0) document.getElementById('btn-today').classList.add('active');
-            if (offset === 1) document.getElementById('btn-next').classList.add('active');
+function closeModal(){
+  document.getElementById('matchModal').style.display = 'none';
+}
+window.onclick = function(event){
+  const modal = document.getElementById('matchModal');
+  if(event.target == modal) closeModal();
+};
 
-            fetchMatches();
-        }
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'ar' ? 'en' : 'ar';
-            document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-            document.documentElement.lang = currentLang;
-
-            document.getElementById('txt-title').innerText = i18n[currentLang].title;
-            document.getElementById('txt-lang-btn').innerText = i18n[currentLang].langBtn;
-            document.getElementById('btn-prev').innerText = i18n[currentLang].yesterday;
-            document.getElementById('btn-today').innerText = i18n[currentLang].today;
-            document.getElementById('btn-next').innerText = i18n[currentLang].tomorrow;
-
-            fetchMatches();
-        }
-
-        async function fetchMatches() {
-            const container = document.getElementById('matches');
-            container.innerHTML = `<div class="loading">${i18n[currentLang].loading}</div>`;
-
-            const dateStr = getDateFormatted(currentDateOffset);
-            const langParam = currentLang === 'ar' ? 'ar' : 'en';
-            const apiUrl = `https://site.api.espn.com/apis/site/v2/sports/soccer/all/scoreboard?dates=${dateStr}&lang=${langParam}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-                const events = data.events || [];
-
-                if (events.length === 0) {
-                    container.innerHTML = `<div class="loading">${i18n[currentLang].noMatches}</div>`;
-                    return;
-                }
-
-                // Group matches by League/Tournament
-                groupedMatches = {};
-                events.forEach(event => {
-                    const leagueName = event.season ? (event.season.slug || 'League') : 'International';
-                    const leagueLogo = event.competitions[0].league ? event.competitions[0].league.logos[0]?.href : '';
-
-                    if (!groupedMatches[leagueName]) {
-                        groupedMatches[leagueName] = {
-                            name: leagueName.toUpperCase().replace(/-/g, ' '),
-                            logo: leagueLogo,
-                            matches: []
-                        };
-                    }
-                    groupedMatches[leagueName].matches.push(event);
-                });
-
-                container.innerHTML = '';
-
-                // Render Leagues and Matches
-                Object.keys(groupedMatches).forEach(leagueKey => {
-                    const league = groupedMatches[leagueKey];
-
-                    const leagueBlock = document.createElement('div');
-                    leagueBlock.className = 'league-block';
-
-                    let matchesHTML = '';
-                    league.matches.forEach((event, idx) => {
-                        const comp = event.competitions[0];
-                        const homeTeam = comp.competitors.find(c => c.homeAway === 'home');
-                        const awayTeam = comp.competitors.find(c => c.homeAway === 'away');
-
-                        const isLive = event.status.type.state === 'in';
-                        const statusText = isLive ? `<span class="live-tag">● ${event.status.type.detail}</span>` : event.status.type.detail;
-
-                        matchesHTML += `
-                            <div class="match-card" onclick="showDetails('${leagueKey}', ${idx})">
-                                <div class="team home">
-                                    <img class="team-logo" src="${homeTeam.team.logo || 'https://via.placeholder.com/35'}" alt="logo">
-                                    <span class="team-name">${homeTeam.team.displayName}</span>
-                                </div>
-                                <div class="score-info">
-                                    <div class="score">${homeTeam.score ?? 0} - ${awayTeam.score ?? 0}</div>
-                                    <div class="status">${statusText}</div>
-                                </div>
-                                <div class="team away">
-                                    <span class="team-name">${awayTeam.team.displayName}</span>
-                                    <img class="team-logo" src="${awayTeam.team.logo || 'https://via.placeholder.com/35'}" alt="logo">
-                                </div>
-                            </div>
-                        `;
-                    });
-
-                    leagueBlock.innerHTML = `
-                        <div class="league-header">
-                            ${league.logo ? `<img class="league-logo" src="${league.logo}">` : '<i class="fa-solid fa-trophy"></i>'}
-                            <span>${league.name}</span>
-                        </div>
-                        ${matchesHTML}
-                    `;
-
-                    container.appendChild(leagueBlock);
-                });
-
-            } catch (err) {
-                console.error(err);
-                container.innerHTML = `<div class="error-msg">${i18n[currentLang].error}</div>`;
-            }
-        }
-
-        function showDetails(leagueKey, index) {
-            const event = groupedMatches[leagueKey].matches[index];
-            const comp = event.competitions[0];
-            const homeTeam = comp.competitors.find(c => c.homeAway === 'home');
-            const awayTeam = comp.competitors.find(c => c.homeAway === 'away');
-
-            const venue = comp.venue ? comp.venue.fullName : 'N/A';
-            const capacity = comp.venue && comp.venue.capacity ? comp.venue.capacity.toLocaleString() : 'N/A';
-            const official = comp.officials && comp.officials.length > 0 ? comp.officials[0].displayName : 'N/A';
-            
-            const stats = comp.statistics || [];
-            const leaders = comp.leaders || [];
-
-            // Build Statistics List
-            let statsHTML = '';
-            if (stats.length > 0) {
-                stats.forEach(s => {
-                    statsHTML += `
-                        <div class="stat-row">
-                            <span>${s.displayValue || '0'}</span>
-                            <span style="color:var(--text-sub); font-weight:600;">${s.label}</span>
-                            <span>${s.displayValue || '0'}</span>
-                        </div>
-                    `;
-                });
-            } else {
-                statsHTML = `<div style="text-align:center; color:var(--text-sub); padding:10px;">لا توجد إحصائيات تفصيلية مسجلة.</div>`;
-            }
-
-            // Build Leaders/Events
-            let leadersHTML = '';
-            if (leaders.length > 0) {
-                leaders.forEach(l => {
-                    const athlete = l.leaders && l.leaders[0] ? l.leaders[0].athlete.displayName : 'N/A';
-                    leadersHTML += `
-                        <div class="stat-row">
-                            <span style="color:var(--accent-light);">${l.displayName}</span>
-                            <span style="font-weight:bold;">${athlete}</span>
-                        </div>
-                    `;
-                });
-            } else {
-                leadersHTML = `<div style="text-align:center; color:var(--text-sub); padding:10px;">لا توجد تفاصيل أهداف أو أحداث بارزة مسجلة.</div>`;
-            }
-
-            const modalBody = document.getElementById('modalBody');
-            modalBody.innerHTML = `
-                <div style="text-align:center; margin-bottom:20px;">
-                    <h3 style="color:var(--accent-light); margin-bottom:8px;">${groupedMatches[leagueKey].name}</h3>
-                    <p style="font-size:12px; color:var(--text-sub);"><i class="fa-solid fa-location-dot"></i> ${i18n[currentLang].venue}: ${venue} (${i18n[currentLang].capacity}: ${capacity})</p>
-                    <p style="font-size:12px; color:var(--text-sub); margin-top:3px;"><i class="fa-solid fa-user-ninja"></i> ${i18n[currentLang].officials}: ${official}</p>
-                </div>
-                
-                <div style="display:flex; justify-content:space-around; align-items:center; margin-bottom:20px;">
-                    <div style="text-align:center; width:35%;">
-                        <img src="${homeTeam.team.logo}" style="width:50px; height:50px; object-fit:contain;">
-                        <div style="font-weight:bold; margin-top:6px; font-size:14px;">${homeTeam.team.displayName}</div>
-                    </div>
-                    <div style="font-size:26px; font-weight:bold; color:var(--accent-glow);">
-                        ${homeTeam.score ?? 0} : ${awayTeam.score ?? 0}
-                    </div>
-                    <div style="text-align:center; width:35%;">
-                        <img src="${awayTeam.team.logo}" style="width:50px; height:50px; object-fit:contain;">
-                        <div style="font-weight:bold; margin-top:6px; font-size:14px;">${awayTeam.team.displayName}</div>
-                    </div>
-                </div>
-
-                <div class="detail-tab">
-                    <h4 class="detail-title">${i18n[currentLang].statsTitle}</h4>
-                    ${statsHTML}
-                </div>
-
-                <div class="detail-tab">
-                    <h4 class="detail-title">${i18n[currentLang].leadersTitle}</h4>
-                    ${leadersHTML}
-                </div>
-            `;
-
-            document.getElementById('matchModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('matchModal').style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            const modal = document.getElementById('matchModal');
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-
-        // Start App and auto refresh every 30 seconds
-        fetchMatches();
-        setInterval(fetchMatches, 30000);
-    </script>
+/* ---------------- Init ---------------- */
+buildDateStrip();
+fetchMatches();
+setInterval(fetchMatches, 30000);
+</script>
 </body>
 </html>
-
