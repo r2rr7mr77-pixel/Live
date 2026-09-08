@@ -60,9 +60,17 @@ body{
 
 .wrap{
   position:relative;z-index:1;
-  max-width:920px;margin:0 auto;
-  padding:18px 12px 60px;
-  display:flex;flex-direction:column;gap:16px;
+  max-width:1180px;margin:0 auto;
+  padding:22px 18px 70px;
+  display:flex;flex-direction:column;gap:18px;
+}
+@media (min-width:900px){
+  .brand h1{font-size:22px;}
+  .team-name{font-size:14.5px;}
+  .score{font-size:21px;min-width:78px;}
+  .match-card{padding:16px 24px;}
+  .league-header{padding:14px 20px;}
+  .modal-content{max-width:760px;padding:32px;}
 }
 
 /* ---------- Header ---------- */
@@ -326,6 +334,32 @@ header::before{
 .star-icon{width:13px;height:13px;animation:twinkle 1.8s ease-in-out infinite;}
 @keyframes twinkle{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.5;transform:scale(.85);}}
 
+.events-box{
+  background:linear-gradient(160deg, rgba(139,92,246,.12), rgba(139,92,246,.03));
+  border:1px solid var(--border-soft);
+  border-radius:14px;
+  padding:6px 14px;
+}
+.event-row{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid rgba(255,255,255,.05);
+}
+.event-row:last-child{border-bottom:none;}
+.event-minute{
+  font-size:11.5px;font-weight:800;color:var(--accent-light);
+  min-width:34px;text-align:center;
+  background:rgba(139,92,246,.15);
+  border-radius:8px;padding:3px 0;
+  flex-shrink:0;
+}
+.event-icon-svg{width:18px;height:18px;flex-shrink:0;}
+.event-icon-svg.goal-spin{animation:rollSpin 3.5s linear infinite;color:var(--accent-light);}
+.event-info{flex:1;min-width:0;}
+.event-player{font-size:13px;font-weight:700;color:var(--text-main);}
+.event-tag{font-size:10.5px;color:var(--accent-light);font-weight:600;}
+.event-side{font-size:10.5px;color:var(--text-dim);}
+
 .stat-compare{margin-bottom:12px;}
 .stat-labels{
   display:flex;justify-content:space-between;
@@ -443,6 +477,18 @@ let groupedMatches = {};
 let collapsedLeagues = {};
 const DAY_RANGE = 4; // days before/after today shown in strip
 
+// The "big five" European leagues, shown first and in this exact order.
+// Matched against ESPN's league slug when available, falling back to name.
+const TOP5_ORDER = ['eng.1','esp.1','ita.1','ger.1','fra.1'];
+const TOP5_NAME_HINTS = ['premier league','la liga','serie a','bundesliga','ligue 1'];
+function top5Rank(leagueKey, leagueName){
+  const bySlug = TOP5_ORDER.indexOf(leagueKey);
+  if(bySlug !== -1) return bySlug;
+  const lower = (leagueName||'').toLowerCase();
+  const byName = TOP5_NAME_HINTS.findIndex(h => lower.includes(h));
+  return byName;
+}
+
 const i18n = {
   ar:{
     title:"مركز المباريات الشامل", langBtn:"English",
@@ -450,9 +496,13 @@ const i18n = {
     noMatches:"لا توجد مباريات مسجلة في هذا اليوم.",
     error:"حدث خطأ في جلب البيانات. تحقق من الاتصال وحاول مجدداً.",
     today:"اليوم", venue:"الملعب", capacity:"السعة", officials:"الحكم",
-    statsTitle:"إحصائيات المباراة", leadersTitle:"أبرز الأحداث",
+    statsTitle:"إحصائيات المباراة", eventsTitle:"أحداث المباراة",
+    performersTitle:"الأبرز في المباراة",
     noStats:"لا توجد إحصائيات تفصيلية مسجلة لهذه المباراة.",
-    noLeaders:"لا توجد أحداث أو تفاصيل بارزة مسجلة.",
+    noEvents:"لا توجد أحداث مسجلة لهذه المباراة بعد.",
+    noLeaders:"لا توجد تفاصيل أبرز اللاعبين مسجلة.",
+    tagPenalty:"ركلة جزاء", tagFreeKick:"ركلة حرة", tagOwnGoal:"هدف عكسي", tagHeader:"ضربة رأس",
+    typeSub:"تبديل", subIn:"دخول", subOut:"خروج",
     ft:"انتهت", live:"مباشر", matchesWord:"مباراة",
     dows:['أحد','إثنين','ثلاثاء','أربعاء','خميس','جمعة','سبت'],
     locale:'ar-EG'
@@ -463,9 +513,13 @@ const i18n = {
     noMatches:"No matches scheduled for this date.",
     error:"Failed to load data. Check your connection and try again.",
     today:"Today", venue:"Venue", capacity:"Capacity", officials:"Referee",
-    statsTitle:"Match Statistics", leadersTitle:"Key Events & Leaders",
+    statsTitle:"Match Statistics", eventsTitle:"Match Events",
+    performersTitle:"Top Performers",
     noStats:"No detailed statistics recorded for this match.",
-    noLeaders:"No notable events or leader details recorded.",
+    noEvents:"No events recorded for this match yet.",
+    noLeaders:"No top performer details recorded.",
+    tagPenalty:"Penalty", tagFreeKick:"Free Kick", tagOwnGoal:"Own Goal", tagHeader:"Header",
+    typeSub:"Substitution", subIn:"In", subOut:"Out",
     ft:"Full Time", live:"Live", matchesWord:"matches",
     dows:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
     locale:'en-US'
@@ -553,6 +607,10 @@ const ICON_WHISTLE = `<svg class="meta-icon" viewBox="0 0 24 24" fill="none"><ci
 const ICON_STAR = `<svg class="star-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.9 6.6L22 9.3l-5 4.9 1.2 7.1L12 17.9 5.8 21.3 7 14.2 2 9.3l7.1-.7z"/></svg>`;
 const ICON_BALL = `<svg class="empty-icon ball-icon" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5"/><path d="M12 8l3 2.2-1.1 3.6H10.1L9 10.2 12 8zM12 2v6M12 22v-2.5M2 12h6M22 12h-4.5" stroke="currentColor" stroke-width="1.3"/></svg>`;
 const ICON_CHEVRON = `<svg class="chevron" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const ICON_GOAL = `<svg class="event-icon-svg goal-spin" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.4"/><path d="M12 8l3 2.2-1.1 3.6H10.1L9 10.2 12 8zM12 2v6M12 22v-2.5M2 12h6M22 12h-4.5" stroke="currentColor" stroke-width="1.1"/></svg>`;
+const ICON_YELLOW = `<svg class="event-icon-svg" viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="18" rx="2" fill="#facc15" transform="rotate(12 12 11)"/></svg>`;
+const ICON_RED = `<svg class="event-icon-svg" viewBox="0 0 24 24" fill="none"><rect x="6" y="2" width="12" height="18" rx="2" fill="#ef4444" transform="rotate(12 12 11)"/></svg>`;
+const ICON_SUB = `<svg class="event-icon-svg" viewBox="0 0 24 24" fill="none"><path d="M7 7h11M18 7l-3.5-3.5M18 7l-3.5 3.5" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 17H6M6 17l3.5 3.5M6 17l3.5-3.5" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 /* ---------------- League name resolution ---------------- */
 function resolveLeagueInfo(event){
@@ -605,11 +663,13 @@ async function fetchMatches(){
       });
     });
 
-    // sort leagues: any-live first, then alphabetically
+    // sort leagues: the big-5 always first in fixed order, then the rest alphabetically
     const leagueKeys = Object.keys(groupedMatches).sort((a,b)=>{
-      const aLive = groupedMatches[a].matches.some(e=>e.status.type.state==='in');
-      const bLive = groupedMatches[b].matches.some(e=>e.status.type.state==='in');
-      if(aLive !== bLive) return aLive ? -1 : 1;
+      const ra = top5Rank(a, groupedMatches[a].name);
+      const rb = top5Rank(b, groupedMatches[b].name);
+      const scoreA = ra === -1 ? 999 : ra;
+      const scoreB = rb === -1 ? 999 : rb;
+      if(scoreA !== scoreB) return scoreA - scoreB;
       return groupedMatches[a].name.localeCompare(groupedMatches[b].name);
     });
 
@@ -698,6 +758,46 @@ function markLiveDays(){
   if(pill) pill.classList.toggle('has-live', anyLive);
 }
 
+/* ---------------- Stat label translation ---------------- */
+const STAT_LABELS = {
+  possessionpct:      {ar:'الاستحواذ',            en:'Possession'},
+  possession:         {ar:'الاستحواذ',            en:'Possession'},
+  totalshots:          {ar:'التسديدات',            en:'Total Shots'},
+  shotsontarget:        {ar:'تسديدات على المرمى',   en:'Shots on Target'},
+  shotsofftarget:       {ar:'تسديدات خارج المرمى',  en:'Shots off Target'},
+  shotpct:             {ar:'دقة التسديد',          en:'Shot Accuracy'},
+  foulscommitted:       {ar:'الأخطاء',              en:'Fouls Committed'},
+  fouls:               {ar:'الأخطاء',              en:'Fouls'},
+  yellowcards:          {ar:'البطاقات الصفراء',     en:'Yellow Cards'},
+  redcards:             {ar:'البطاقات الحمراء',     en:'Red Cards'},
+  offsides:            {ar:'التسلل',               en:'Offsides'},
+  cornerkicks:          {ar:'الركنيات',             en:'Corner Kicks'},
+  corners:             {ar:'الركنيات',             en:'Corners'},
+  saves:               {ar:'التصديات',             en:'Saves'},
+  goalkeepersaves:       {ar:'تصديات الحارس',        en:'Goalkeeper Saves'},
+  passaccuracy:         {ar:'دقة التمرير',          en:'Pass Accuracy'},
+  passpct:             {ar:'دقة التمرير',          en:'Pass Accuracy'},
+  totalpasses:          {ar:'إجمالي التمريرات',     en:'Total Passes'},
+  accuratepasses:       {ar:'التمريرات الناجحة',    en:'Accurate Passes'},
+  freekicks:           {ar:'الركلات الحرة',        en:'Free Kicks'},
+  crosses:             {ar:'العرضيات',             en:'Crosses'},
+  touches:             {ar:'اللمسات',              en:'Touches'},
+  tackles:             {ar:'التدخلات',             en:'Tackles'},
+  interceptions:        {ar:'الاعتراضات',           en:'Interceptions'},
+  clearances:          {ar:'الإبعادات',            en:'Clearances'},
+  duelswon:            {ar:'الثنائيات المكسوبة',   en:'Duels Won'},
+  aerialswon:           {ar:'الكرات الهوائية المكسوبة', en:'Aerials Won'},
+  totaltackles:         {ar:'التدخلات',             en:'Tackles'},
+  blockedshots:         {ar:'التسديدات المحجوبة',   en:'Blocked Shots'},
+  wonoffsides:          {ar:'التسلل',               en:'Offsides'},
+};
+function translateStatLabel(statName, apiLabel){
+  const key = (statName||'').toLowerCase().replace(/[^a-z]/g,'');
+  const found = STAT_LABELS[key];
+  if(found) return found[currentLang];
+  return apiLabel || statName;
+}
+
 /* ---------------- Modal / details ---------------- */
 function buildStatBars(homeTeam, awayTeam){
   const homeStats = homeTeam.statistics || [];
@@ -707,13 +807,13 @@ function buildStatBars(homeTeam, awayTeam){
   const map = {};
   homeStats.forEach(s=>{
     map[s.name] = map[s.name] || {};
-    map[s.name].label = s.displayName || s.label || s.name;
+    map[s.name].label = translateStatLabel(s.name, s.displayName || s.label);
     map[s.name].home = parseFloat(s.displayValue) || 0;
     map[s.name].homeDisplay = s.displayValue ?? '0';
   });
   awayStats.forEach(s=>{
     map[s.name] = map[s.name] || {};
-    map[s.name].label = s.displayName || s.label || s.name;
+    map[s.name].label = translateStatLabel(s.name, s.displayName || s.label);
     map[s.name].away = parseFloat(s.displayValue) || 0;
     map[s.name].awayDisplay = s.displayValue ?? '0';
   });
@@ -741,6 +841,80 @@ function buildStatBars(homeTeam, awayTeam){
   return html;
 }
 
+function clockMinutes(clock){
+  if(!clock) return 999;
+  const raw = (clock.displayValue || clock || '').toString();
+  const m = raw.match(/(\d+)(?:\+(\d+))?/);
+  if(!m) return 999;
+  return parseInt(m[1],10) + (m[2]?parseInt(m[2],10)*0.1:0);
+}
+
+function goalTag(detail){
+  const text = ((detail.type && detail.type.text) || '').toLowerCase();
+  if(detail.penaltyKick || text.includes('penalty')) return t('tagPenalty');
+  if(text.includes('free kick')) return t('tagFreeKick');
+  if(detail.ownGoal || text.includes('own goal')) return t('tagOwnGoal');
+  if(text.includes('header')) return t('tagHeader');
+  return '';
+}
+
+function buildEventsTimeline(comp, homeTeam, awayTeam){
+  const details = comp.details || [];
+  if(details.length === 0) return null;
+
+  const relevant = details.filter(d=>{
+    const text = ((d.type && d.type.text) || '').toLowerCase();
+    return d.scoringPlay || d.yellowCard || d.redCard || text.includes('goal') || text.includes('card') || text.includes('substitution');
+  });
+  if(relevant.length === 0) return null;
+
+  relevant.sort((a,b)=> clockMinutes(a.clock) - clockMinutes(b.clock));
+
+  let html = '';
+  relevant.forEach(d=>{
+    const text = ((d.type && d.type.text) || '').toLowerCase();
+    const teamId = d.team && d.team.id;
+    const isHome = teamId && homeTeam.team && teamId === homeTeam.team.id;
+    const isAway = teamId && awayTeam.team && teamId === awayTeam.team.id;
+    const sideLabel = isHome ? homeTeam.team.displayName : isAway ? awayTeam.team.displayName : '';
+
+    let icon, playerName, tagText = '';
+    if(d.scoringPlay || text.includes('goal')){
+      icon = ICON_GOAL;
+      playerName = (d.athletesInvolved && d.athletesInvolved[0] && (d.athletesInvolved[0].displayName || d.athletesInvolved[0].shortName)) || (d.text || '');
+      tagText = goalTag(d);
+    } else if(d.redCard || text.includes('red card')){
+      icon = ICON_RED;
+      playerName = (d.athletesInvolved && d.athletesInvolved[0] && (d.athletesInvolved[0].displayName || d.athletesInvolved[0].shortName)) || (d.text || '');
+    } else if(d.yellowCard || text.includes('yellow card')){
+      icon = ICON_YELLOW;
+      playerName = (d.athletesInvolved && d.athletesInvolved[0] && (d.athletesInvolved[0].displayName || d.athletesInvolved[0].shortName)) || (d.text || '');
+    } else if(text.includes('substitution')){
+      icon = ICON_SUB;
+      const inP = d.athletesInvolved && d.athletesInvolved[0] ? (d.athletesInvolved[0].displayName || d.athletesInvolved[0].shortName) : '';
+      const outP = d.athletesInvolved && d.athletesInvolved[1] ? (d.athletesInvolved[1].displayName || d.athletesInvolved[1].shortName) : '';
+      playerName = outP ? `${t('subIn')} ${inP} · ${t('subOut')} ${outP}` : (inP || d.text || '');
+    } else {
+      return;
+    }
+    if(!playerName) return;
+
+    const clockText = (d.clock && d.clock.displayValue) || '';
+    html += `
+      <div class="event-row">
+        <div class="event-minute">${clockText}</div>
+        ${icon}
+        <div class="event-info">
+          <div class="event-player">${playerName}${tagText?` <span class="event-tag">(${tagText})</span>`:''}</div>
+          ${sideLabel?`<div class="event-side">${sideLabel}</div>`:''}
+        </div>
+      </div>
+    `;
+  });
+
+  return html || null;
+}
+
 function showDetails(leagueKey, index){
   const event = groupedMatches[leagueKey].matches[index];
   const comp = event.competitions[0];
@@ -752,13 +926,13 @@ function showDetails(leagueKey, index){
   const official = comp.officials && comp.officials.length > 0 ? comp.officials[0].displayName : null;
 
   const leaders = comp.leaders || event.competitions[0].leaders || [];
-  let leadersHTML = '';
+  let performersHTML = '';
   if(leaders.length > 0){
     leaders.forEach(l=>{
       const athlete = l.leaders && l.leaders[0] ? l.leaders[0].athlete.displayName : null;
       const value = l.leaders && l.leaders[0] ? l.leaders[0].displayValue : '';
       if(!athlete) return;
-      leadersHTML += `
+      performersHTML += `
         <div class="leader-row">
           <span class="leader-label">${ICON_STAR}${l.displayName}</span>
           <span class="leader-name">${athlete} ${value?('· '+value):''}</span>
@@ -766,7 +940,9 @@ function showDetails(leagueKey, index){
       `;
     });
   }
-  if(!leadersHTML) leadersHTML = `<div class="empty-msg" style="padding:16px;">${t('noLeaders')}</div>`;
+
+  const eventsHTML = buildEventsTimeline(comp, homeTeam, awayTeam);
+  const eventsBlock = eventsHTML ? eventsHTML : `<div class="empty-msg" style="padding:16px;">${t('noEvents')}</div>`;
 
   const statsHTML = buildStatBars(homeTeam, awayTeam);
   const statsBlock = statsHTML ? statsHTML : `<div class="empty-msg" style="padding:16px;">${t('noStats')}</div>`;
@@ -794,14 +970,20 @@ function showDetails(leagueKey, index){
     </div>
 
     <div class="detail-tab">
+      <h4 class="detail-title">${ICON_STAR}${t('eventsTitle')}</h4>
+      <div class="events-box">${eventsBlock}</div>
+    </div>
+
+    <div class="detail-tab">
       <h4 class="detail-title">${ICON_STAR}${t('statsTitle')}</h4>
       ${statsBlock}
     </div>
 
+    ${performersHTML ? `
     <div class="detail-tab">
-      <h4 class="detail-title">${ICON_STAR}${t('leadersTitle')}</h4>
-      ${leadersHTML}
-    </div>
+      <h4 class="detail-title">${ICON_STAR}${t('performersTitle')}</h4>
+      ${performersHTML}
+    </div>` : ''}
   `;
 
   document.getElementById('matchModal').style.display = 'flex';
@@ -830,3 +1012,4 @@ setInterval(fetchMatches, 30000);
 </script>
 </body>
 </html>
+
