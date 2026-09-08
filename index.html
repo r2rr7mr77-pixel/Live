@@ -477,16 +477,64 @@ let groupedMatches = {};
 let collapsedLeagues = {};
 const DAY_RANGE = 4; // days before/after today shown in strip
 
-// The "big five" European leagues, shown first and in this exact order.
-// Matched against ESPN's league slug when available, falling back to name.
-const TOP5_ORDER = ['eng.1','esp.1','ita.1','ger.1','fra.1'];
-const TOP5_NAME_HINTS = ['premier league','la liga','serie a','bundesliga','ligue 1'];
-function top5Rank(leagueKey, leagueName){
-  const bySlug = TOP5_ORDER.indexOf(leagueKey);
-  if(bySlug !== -1) return bySlug;
-  const lower = (leagueName||'').toLowerCase();
-  const byName = TOP5_NAME_HINTS.findIndex(h => lower.includes(h));
-  return byName;
+// ---------------------------------------------------------------------
+// League priority: lower index = shown first.
+// Matching is done against MULTIPLE identifiers (id, slug, abbreviation)
+// because ESPN's "all" scoreboard doesn't always expose the same field,
+// and abbreviation/slug/id stay in English/numeric form even when the
+// UI language is Arabic (unlike the league "name", which gets translated
+// and therefore can't be used for matching in Arabic mode).
+// ---------------------------------------------------------------------
+const LEAGUE_PRIORITY = [
+  // Continental / international showcase competitions
+  'uefa.champions', 'uefa.champions_qual',
+  // The "big five" European leagues
+  'eng.1', 'esp.1', 'ita.1', 'ger.1', 'fra.1',
+  // Other major UEFA club competitions
+  'uefa.europa', 'uefa.europa.conf', 'uefa.super_cup',
+  // International tournaments
+  'fifa.world', 'fifa.worldq.uefa', 'uefa.euro', 'uefa.nations',
+  'conmebol.america', 'concacaf.gold', 'afc.asian.cup',
+  // Prominent domestic cups of the big five
+  'eng.fa', 'eng.league_cup', 'esp.copa_del_rey',
+  'ita.coppa_italia', 'ger.dfb_pokal', 'fra.coupe_de_france',
+  // Other well-known domestic leagues
+  'usa.1', 'ksa.1', 'ned.1', 'por.1', 'tur.1', 'bra.1', 'arg.1',
+  // Other continental club competitions
+  'conmebol.libertadores', 'conmebol.sudamericana',
+  'concacaf.champions', 'afc.champions'
+];
+
+// English-language name fallbacks (used only if id/slug/abbreviation are
+// all missing from the API response for a given match).
+const LEAGUE_NAME_HINTS = [
+  'uefa champions league',
+  'premier league', 'la liga', 'serie a', 'bundesliga', 'ligue 1',
+  'europa league', 'europa conference league',
+  'world cup', 'euro championship', 'nations league',
+  'copa america', 'gold cup', 'asian cup',
+  'fa cup', 'efl cup', 'league cup', 'copa del rey', 'coppa italia', 'dfb', 'coupe de france',
+  'mls', 'saudi', 'eredivisie', 'primeira liga', 'super lig',
+  'libertadores', 'sudamericana', 'concacaf champions', 'afc champions'
+];
+
+function leaguePriorityScore(info){
+  const candidates = [info.slug, info.abbreviation, info.id]
+    .filter(Boolean)
+    .map(v => String(v).toLowerCase());
+
+  for(const c of candidates){
+    const idx = LEAGUE_PRIORITY.indexOf(c);
+    if(idx !== -1) return idx;
+  }
+
+  // fall back to matching the (possibly-translated) display name against
+  // English hints - only useful when the API actually returned English text
+  const lowerName = (info.name || '').toLowerCase();
+  const hintIdx = LEAGUE_NAME_HINTS.findIndex(h => lowerName.includes(h));
+  if(hintIdx !== -1) return LEAGUE_PRIORITY.length + hintIdx;
+
+  return -1; // unknown / unmatched league
 }
 
 const i18n = {
@@ -615,13 +663,23 @@ const ICON_SUB = `<svg class="event-icon-svg" viewBox="0 0 24 24" fill="none"><p
 /* ---------------- League name resolution ---------------- */
 function resolveLeagueInfo(event){
   const comp = event.competitions[0];
-  const league = comp.league || (event.season ? {name:event.season.slug} : null);
-  let name = league && league.name ? league.name : (event.season && event.season.slug ? event.season.slug : 'International');
+  const league = comp.league || null;
+  const seasonSlug = event.season && event.season.slug ? event.season.slug : '';
+
+  let name = (league && league.name) ? league.name : (seasonSlug || 'International');
   name = name.replace(/[-_]/g,' ').replace(/\s+/g,' ').trim();
   name = name.replace(/\b\w/g, c => c.toUpperCase());
+
   const logo = league && league.logos && league.logos.length ? league.logos[0].href : '';
-  const key = (league && league.slug) || name;
-  return {key, name, logo};
+  const slug = (league && league.slug) || seasonSlug || '';
+  const abbreviation = league && league.abbreviation ? league.abbreviation : '';
+  const id = league && league.id ? league.id : '';
+
+  // Grouping key: prefer the most stable identifier available so the same
+  // league doesn't get split into two groups across language switches.
+  const key = id || slug || abbreviation || name;
+
+  return {key, id, slug, abbreviation, name, logo};
 }
 
 /* ---------------- Fetch & render ---------------- */
@@ -648,7 +706,11 @@ async function fetchMatches(){
     events.forEach(event=>{
       const info = resolveLeagueInfo(event);
       if(!groupedMatches[info.key]){
-        groupedMatches[info.key] = {name: info.name, logo: info.logo, matches: []};
+        groupedMatches[info.key] = {
+          name: info.name, logo: info.logo,
+          slug: info.slug, abbreviation: info.abbreviation, id: info.id,
+          matches: []
+        };
       }
       groupedMatches[info.key].matches.push(event);
     });
@@ -663,12 +725,13 @@ async function fetchMatches(){
       });
     });
 
-    // sort leagues: the big-5 always first in fixed order, then the rest alphabetically
+    // sort leagues: known important competitions first (in LEAGUE_PRIORITY
+    // order), everything else afterwards sorted alphabetically by name.
     const leagueKeys = Object.keys(groupedMatches).sort((a,b)=>{
-      const ra = top5Rank(a, groupedMatches[a].name);
-      const rb = top5Rank(b, groupedMatches[b].name);
-      const scoreA = ra === -1 ? 999 : ra;
-      const scoreB = rb === -1 ? 999 : rb;
+      const ra = leaguePriorityScore(groupedMatches[a]);
+      const rb = leaguePriorityScore(groupedMatches[b]);
+      const scoreA = ra === -1 ? 9999 : ra;
+      const scoreB = rb === -1 ? 9999 : rb;
       if(scoreA !== scoreB) return scoreA - scoreB;
       return groupedMatches[a].name.localeCompare(groupedMatches[b].name);
     });
